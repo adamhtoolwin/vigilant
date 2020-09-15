@@ -1,0 +1,8 @@
+torch
+torchvision
+facenet_pytorch
+pandas
+numpy
+tqdm
+safitty
+tensorboard
