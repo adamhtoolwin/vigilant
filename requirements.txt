@@ -1,3 +1,4 @@
+PyYAML
 torch
 torchvision
 facenet_pytorch

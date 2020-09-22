@@ -4,6 +4,9 @@ import numpy as np
 from PIL import Image
 import torch
 import logging
+import argparse
+import yaml
+import pandas as pd
 
 from facenet_pytorch import MTCNN
 import albumentations as A
@@ -44,7 +47,7 @@ class Dataset(torch.utils.data.Dataset):
         face_detector: dict = None,
         with_labels: bool = True,
     ):
-        self.df = df
+        self.df = df.sample(frac=1).reset_index(drop=True)
         self.root = root
         self.transforms = transforms
         self.with_labels = with_labels
@@ -53,17 +56,28 @@ class Dataset(torch.utils.data.Dataset):
             face_detector["keep_all"] = True
             face_detector["post_process"] = False
             self.face_extractor = MTCNN(**face_detector)
+        self.metadata = {
+            "live_samples": 0,
+            "fake_samples": 0
+        }
+
+    def analyze(self):
+        for index in range(0, len(self.df)):
+            if self.df.iloc[index].target == 0:
+                self.metadata["fake_samples"] += 1
+            else:
+                self.metadata["live_samples"] += 1
+
+        print("Live samples: ", self.metadata["live_samples"])
+        print("Fake samples: ", self.metadata["fake_samples"])
 
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, item: int):
         path = os.path.join(self.root, self.df.iloc[item].path)
-        parent_path, file_name = os.path.split(path)
-        file = np.random.choice(os.listdir(parent_path))
-        full_path = os.path.join(parent_path, file)
 
-        image = Image.open(full_path)
+        image = Image.open(path)
         if self.with_labels:
             target = self.df.iloc[item].target
 
@@ -98,3 +112,19 @@ class Dataset(torch.utils.data.Dataset):
             return image
 
 
+if __name__ == "__main__":
+    print("Running dataset analysis...")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-data", "--data_root", required=True, help="Dataset root path.")
+    parser.add_argument("-config", "--config_file_path", required=True, help="Config file path.")
+    args = parser.parse_args()
+
+    with open(args.config_file_path, 'r') as stream:
+        configs = yaml.safe_load(stream)
+
+    df = pd.read_csv(configs['train_df'])
+    dataset = Dataset(df, configs['path_root'], face_detector=None,
+                      transforms=get_train_augmentations())
+    print("Length of dataset: ", len(dataset))
+    dataset.analyze()
