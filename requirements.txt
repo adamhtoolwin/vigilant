@@ -4,5 +4,6 @@ facenet_pytorch
 pandas
 numpy
 tqdm
+albumentations
 safitty
 tensorboard
