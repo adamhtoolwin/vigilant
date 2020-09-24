@@ -3,36 +3,47 @@ import os
 import numpy as np
 from PIL import Image
 import torch
+import torchvision
 import logging
 import argparse
 import yaml
 import pandas as pd
+import matplotlib.pyplot as plt
+import utils
 
 from facenet_pytorch import MTCNN
 import albumentations as A
 from albumentations.pytorch import ToTensorV2 as ToTensor
 
 
-def get_train_augmentations(image_size: int = 224):
+def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: tuple = (1, 1, 1)):
     return A.Compose(
         [
-            # A.CoarseDropout(20),
-            # A.Rotate(30),
-            # A.RandomCrop(image_size, image_size, p=0.5),
+            A.RandomBrightnessContrast(brightness_limit=32, contrast_limit=(0.5, 1.5)),
+            A.HueSaturationValue(hue_shift_limit=18, sat_shift_limit=(1, 2)),
+            A.CoarseDropout(20),
+            A.Rotate(30),
+
+            A.Resize(image_size, image_size),
+            A.RandomCrop(image_size, image_size, p=0.5),
+
             A.LongestMaxSize(image_size),
+            A.Normalize(mean=mean, std=std),
+            A.HorizontalFlip(),
             A.PadIfNeeded(image_size, image_size, 0),
-            # A.Normalize(),
+            A.Transpose(),
             ToTensor(),
         ]
     )
 
 
-def get_test_augmentations(image_size: int = 224):
+def get_test_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: tuple = (1, 1, 1)):
     return A.Compose(
         [
+            A.Resize(image_size, image_size),
             A.LongestMaxSize(image_size),
+            A.Normalize(mean=mean, std=std),
             A.PadIfNeeded(image_size, image_size, 0),
-            # A.Normalize(),
             ToTensor(),
         ]
     )
@@ -44,6 +55,7 @@ class Dataset(torch.utils.data.Dataset):
         df: "pd.DataFrame",
         root: str,
         transforms: Callable,
+        custom_transforms: list = None,
         face_detector: dict = None,
         with_labels: bool = True,
     ):
@@ -61,15 +73,26 @@ class Dataset(torch.utils.data.Dataset):
             "fake_samples": 0
         }
 
-    def analyze(self):
-        for index in range(0, len(self.df)):
-            if self.df.iloc[index].target == 0:
-                self.metadata["fake_samples"] += 1
-            else:
-                self.metadata["live_samples"] += 1
+    def analyze(self, n: int = 0):
+        if n > 0:
+            indices = np.random.randint(len(self.df), size=n)
 
-        print("Live samples: ", self.metadata["live_samples"])
-        print("Fake samples: ", self.metadata["fake_samples"])
+            result = torch.Tensor()
+            for index in indices:
+                img = self.__getitem__(index)[0].unsqueeze(0)
+                result = torch.cat((result, img), dim=0)
+
+            grid = torchvision.utils.make_grid(result)
+            utils.imshow(grid)
+
+        # for index in range(0, len(self.df)):
+        #     if self.df.iloc[index].target == 0:
+        #         self.metadata["fake_samples"] += 1
+        #     else:
+        #         self.metadata["live_samples"] += 1
+        #
+        # print("Live samples: ", self.metadata["live_samples"])
+        # print("Fake samples: ", self.metadata["fake_samples"])
 
     def __len__(self):
         return len(self.df)
@@ -123,8 +146,8 @@ if __name__ == "__main__":
     with open(args.config_file_path, 'r') as stream:
         configs = yaml.safe_load(stream)
 
-    df = pd.read_csv(configs['train_df'])
-    dataset = Dataset(df, configs['path_root'], face_detector=None,
+    data_df = pd.read_csv(configs['train_df'])
+    dataset = Dataset(data_df, configs['path_root'], face_detector=None,
                       transforms=get_train_augmentations())
     print("Length of dataset: ", len(dataset))
-    dataset.analyze()
+    dataset.analyze(n=5)
