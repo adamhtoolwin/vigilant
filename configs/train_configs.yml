@@ -18,6 +18,23 @@ gamma: 0.3
 
 image_size: 224  # size of input image
 cue_log_every: 100  # will log cues every cue_log_every batches. If 0, than won't log
+mean:
+  r: 0
+  g: 0
+  b: 0
+std:
+  r: 1
+  g: 1
+  b: 1
+
+#mean:
+#  r: 0.485
+#  g: 0.456
+#  b: 0.406
+#std:
+#  r: 0.229
+#  g: 0.224
+#  b: 0.225
 
 # uncomment this, to use online face cropping
 # however it is not recommended
@@ -38,7 +55,7 @@ batch_size: 32  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
-default_root_dir: "/root/lgsc/logs/"  # path to save pytorch_lightning logs
+log_dir: "/root/vigilant/logs/"  # path to save pytorch_lightning logs
 max_epochs: 15  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
