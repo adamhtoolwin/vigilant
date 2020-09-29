@@ -1,16 +1,20 @@
-import torch
-import torchvision
 import argparse
 import yaml
 import datetime
 import os
 import glob
+
 import utils
+from dataset import dataloaders
+from models.scan import SCAN
+
+import torch
+import torchvision
+import pandas as pd
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("-data", "--data_root", required=True, help="Dataset root path.")
     parser.add_argument("-c", "--config", required=True, help="Config file path.")
     args = parser.parse_args()
 
@@ -33,3 +37,20 @@ if __name__ == "__main__":
 
     with open(version_directory + '/configs.yml', 'w') as outfile:
         yaml.dump(configs, outfile, default_flow_style=False)
+
+    # ========================= End of DevOps ==========================
+    # ========================= Start of ML ==========================
+    device = configs['device']
+
+    train_df = pd.read_csv(configs['train_df'])
+    val_df = pd.read_csv(configs['val_df'])
+
+    train_loader = dataloaders.get_train_dataloader(train_df, configs)
+
+    model = SCAN()
+    model.to(device)
+
+    if configs['print_model']:
+        print(model)
+
+    print("hi")

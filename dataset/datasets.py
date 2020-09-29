@@ -8,8 +8,10 @@ import logging
 import argparse
 import yaml
 import pandas as pd
+import time
 import matplotlib.pyplot as plt
-import datasets.utils as utils
+
+from dataset.utils import imshow
 
 from facenet_pytorch import MTCNN
 import albumentations as A
@@ -22,7 +24,7 @@ def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std:
             # A.RandomBrightnessContrast(brightness_limit=32, contrast_limit=(0.5, 1.5)),
             # A.HueSaturationValue(hue_shift_limit=18, sat_shift_limit=(1, 2)),
             # A.CoarseDropout(20),
-            A.Rotate(30),
+            A.Rotate(10),
 
             A.Resize(image_size, image_size),
             # A.RandomCrop(image_size, image_size, p=0.5),
@@ -84,23 +86,22 @@ class Dataset(torch.utils.data.Dataset):
                 result = torch.cat((result, img), dim=0)
 
             grid = torchvision.utils.make_grid(result)
-            utils.imshow(grid)
+            imshow(grid)
 
-        # for index in range(0, len(self.df)):
-        #     if self.df.iloc[index].target == 0:
-        #         self.metadata["fake_samples"] += 1
-        #     else:
-        #         self.metadata["live_samples"] += 1
-        #
-        # print("Live samples: ", self.metadata["live_samples"])
-        # print("Fake samples: ", self.metadata["fake_samples"])
+        for index in range(0, len(self.df)):
+            if self.df.iloc[index].target == 0:
+                self.metadata["fake_samples"] += 1
+            else:
+                self.metadata["live_samples"] += 1
+
+        print("Live samples: ", self.metadata["live_samples"])
+        print("Fake samples: ", self.metadata["fake_samples"])
 
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, item: int):
         path = os.path.join(self.root, self.df.iloc[item].path)
-        print(path)
 
         image = Image.open(path)
         if self.with_labels:

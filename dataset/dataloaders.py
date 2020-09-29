@@ -3,7 +3,7 @@ import torch
 import pandas as pd
 from torch.utils.data import DataLoader
 
-from datasets.datasets import get_train_augmentations, Dataset
+from dataset.datasets import get_train_augmentations, Dataset
 
 
 def get_train_dataloader(df: pd.DataFrame, configs: dict):
