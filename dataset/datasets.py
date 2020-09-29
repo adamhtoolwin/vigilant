@@ -9,7 +9,7 @@ import argparse
 import yaml
 import pandas as pd
 import matplotlib.pyplot as plt
-from datasets.utils import imshow
+import datasets.utils as utils
 
 from facenet_pytorch import MTCNN
 import albumentations as A
@@ -84,7 +84,7 @@ class Dataset(torch.utils.data.Dataset):
                 result = torch.cat((result, img), dim=0)
 
             grid = torchvision.utils.make_grid(result)
-            imshow(grid)
+            utils.imshow(grid)
 
         # for index in range(0, len(self.df)):
         #     if self.df.iloc[index].target == 0:

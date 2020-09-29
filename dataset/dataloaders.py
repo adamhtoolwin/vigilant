@@ -14,7 +14,7 @@ def get_train_dataloader(df: pd.DataFrame, configs: dict):
 
     try:
         face_detector = configs['face_detector']
-    except AttributeError:
+    except KeyError:
         face_detector = None
     dataset = Dataset(
         df, configs['path_root'], transforms, face_detector=face_detector
