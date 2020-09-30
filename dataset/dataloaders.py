@@ -35,3 +35,26 @@ def get_train_dataloader(df: pd.DataFrame, configs: dict):
         shuffle=shuffle,
     )
     return dataloader
+
+
+def get_validation_dataloader(df: pd.DataFrame, configs: dict):
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    transforms = get_train_augmentations(configs['image_size'], mean=mean, std=std)
+
+    try:
+        face_detector = configs['face_detector']
+    except KeyError:
+        face_detector = None
+    dataset = Dataset(
+        df, configs['path_root'], transforms, face_detector=face_detector
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=configs['batch_size'],
+        num_workers=configs['num_workers_val'],
+        shuffle=False,
+    )
+    return dataloader

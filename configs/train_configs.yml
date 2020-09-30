@@ -1,4 +1,4 @@
-device: cuda:0
+device: cuda:3
 
 show_imgs: False
 print_model: False
@@ -52,7 +52,7 @@ train_df: "/root/datasets/surf/train_labels.csv"  # path to train csv file
 val_df: "/root/datasets/surf/val_labels.csv"  # path to validation csv file
 path_root: "/root/datasets/surf"  # prefix path to your images
 
-batch_size: 32  # batch size for both validation and train dataloader
+batch_size: 64  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
