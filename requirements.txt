@@ -7,5 +7,5 @@ pandas
 numpy
 tqdm
 albumentations
-tensorboard
+tensorboard==2.2.0
 online_triplet_loss

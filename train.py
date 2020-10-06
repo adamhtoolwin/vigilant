@@ -69,18 +69,16 @@ if __name__ == "__main__":
         print(model)
 
     print("Starting training...")
-    
+
     training_avg_losses = []
     for i in tqdm.trange(int(configs['max_epochs']), desc="Epoch"):
         training_losses = train(model, device, optim, criterion, train_loader,
                                 writer, int(i+1))
         avg_loss = np.mean(training_losses)
         training_avg_losses.append(avg_loss)
-        writer.add_scalar('Loss (Epoch)/Training', avg_loss, i)
+        # writer.add_scalar('Loss (Epoch)/Training', avg_loss, i)
 
         with torch.no_grad():
-            # val_losses = validate(model, device, optim, criterion, train_loader,
-            #                       writer, int(i+1))
-            pass
+            val_losses = validate(model, device, optim, criterion, val_loader,
+                                  writer, int(i+1))
         torch.save(model.state_dict(), weights_directory + "epoch_" + str(i) + ".pth")
-    print("hi")

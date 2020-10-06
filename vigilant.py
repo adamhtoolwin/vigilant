@@ -30,7 +30,7 @@ def train(
         optimizer.step()
 
         # print("Training loss: ", loss.item(), flush=True)
-        writer.add_scalar('Loss (steps)/Training Epoch ' + str(epoch), loss.item(), batch_index)    # b index * 2, b_index * 3
+        writer.add_scalar('Loss/Training', loss.item(), epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
     return losses
@@ -57,10 +57,9 @@ def validate(
 
         output = model(img)
         loss = criterion(output, labels)
-        loss.backward()
 
         # print("Training loss: ", loss.item(), flush=True)
-        writer.add_scalar('Loss (steps)/Validation Epoch ' + str(epoch), loss.item(), batch_index)
+        writer.add_scalar('Loss/Validation', loss.item(), epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
     return losses

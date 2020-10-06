@@ -27,7 +27,7 @@ class SCAN(nn.Module):
 class SCANEncoder(nn.Module):
     def __init__(self, dropout: float = 0.5, num_classes: int = 2):
         super().__init__()
-        self.backbone = ResNet18Encoder()
+        self.backbone = ResNet18Encoder(pretrained=False)
         self.fc = nn.Linear(
             in_features=25088, out_features=num_classes
         )
