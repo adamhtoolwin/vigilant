@@ -15,6 +15,7 @@ import torchvision
 from torch.utils.tensorboard import SummaryWriter
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 if __name__ == "__main__":
@@ -50,6 +51,7 @@ if __name__ == "__main__":
     # ========================= Start of ML ==========================
     device = configs['device']
     print("Using", device)
+    print("Version ", version)
 
     train_df = pd.read_csv(configs['train_df'])
     val_df = pd.read_csv(configs['val_df'])
@@ -71,14 +73,26 @@ if __name__ == "__main__":
     print("Starting training...")
 
     training_avg_losses = []
+    val_avg_losses = []
     for i in tqdm.trange(int(configs['max_epochs']), desc="Epoch"):
         training_losses = train(model, device, optim, criterion, train_loader,
                                 writer, int(i+1))
-        avg_loss = np.mean(training_losses)
-        training_avg_losses.append(avg_loss)
-        # writer.add_scalar('Loss (Epoch)/Training', avg_loss, i)
+        train_avg_loss = np.mean(training_losses)
+        training_avg_losses.append(train_avg_loss)
+        writer.add_scalar('Loss/Training average loss', train_avg_loss, i)
 
         with torch.no_grad():
             val_losses = validate(model, device, optim, criterion, val_loader,
                                   writer, int(i+1))
+            val_avg_loss = np.mean(val_losses)
+            val_avg_losses.append(val_avg_loss)
         torch.save(model.state_dict(), weights_directory + "epoch_" + str(i) + ".pth")
+
+    plt.plot(training_avg_losses, label="Training average loss")
+    plt.plot(val_avg_losses, label="Validation average loss")
+    plt.title("Overall Loss curve")
+    plt.legend()
+    plt.grid()
+    plt.savefig(version_directory + "/losses.png")
+    writer.close()
+

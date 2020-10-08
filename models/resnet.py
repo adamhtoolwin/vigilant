@@ -134,7 +134,8 @@ class ResNet18Encoder(nn.Module):
         self.resnet18.fc = None
         self.out_indices = out_indices
 
-        self._freeze_encoder()
+        if pretrained:
+            self._freeze_encoder()
 
     def _freeze_encoder(self):
         for p in self.resnet18.parameters():
