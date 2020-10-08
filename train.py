@@ -79,13 +79,15 @@ if __name__ == "__main__":
                                 writer, int(i+1))
         train_avg_loss = np.mean(training_losses)
         training_avg_losses.append(train_avg_loss)
-        writer.add_scalar('Loss/Training average loss', train_avg_loss, i)
+        writer.add_scalar('Loss (epoch)/Training average loss', train_avg_loss, i)
 
         with torch.no_grad():
             val_losses = validate(model, device, optim, criterion, val_loader,
                                   writer, int(i+1))
             val_avg_loss = np.mean(val_losses)
             val_avg_losses.append(val_avg_loss)
+
+        writer.add_scalar('Loss (epoch)/Validation average loss', val_avg_loss, i)
         torch.save(model.state_dict(), weights_directory + "epoch_" + str(i) + ".pth")
 
     plt.plot(training_avg_losses, label="Training average loss")
