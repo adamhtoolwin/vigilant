@@ -6,7 +6,7 @@ import glob
 import tqdm
 
 import utils
-from dataset import dataloaders
+from dataset import casia_fasd
 from models.scan import SCAN, Vigilant, SCANEncoder
 from models.resnet import ResNet18Classifier
 from vigilant import *
@@ -57,8 +57,8 @@ if __name__ == "__main__":
     train_df = pd.read_csv(configs['train_df'])
     val_df = pd.read_csv(configs['val_df'])
 
-    train_loader = dataloaders.get_train_dataloader(train_df, configs)
-    val_loader = dataloaders.get_validation_dataloader(val_df, configs)
+    train_loader = casia_fasd.get_train_dataloader(train_df, configs)
+    val_loader = casia_fasd.get_validation_dataloader(val_df, configs)
 
     model = ResNet18Classifier(pretrained=False)
     model.to(device)
@@ -71,6 +71,7 @@ if __name__ == "__main__":
     if configs['print_model']:
         print(model)
 
+    print("====================")
     print("Starting training...")
 
     training_avg_losses = []

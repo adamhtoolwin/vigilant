@@ -177,7 +177,8 @@ class ResNet18Classifier(nn.Module):
             in_features=self.resnet18.fc.in_features, out_features=num_classes
         )
         self.drop = nn.Dropout(dropout)
-        self._freeze_clf()
+        if pretrained:
+            self._freeze_clf()
 
     def _freeze_clf(self):
         for p in self.resnet18.parameters():

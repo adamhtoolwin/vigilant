@@ -47,11 +47,19 @@ class SCANEncoder(nn.Module):
 
 
 class Vigilant(nn.Module):
-    def __init__(self, dropout: float = 0.5):
+    def __init__(self, dropout: float = 0.5, pretrained: bool = True, num_classes: int = 2):
         super().__init__()
-        self.backbone = models.resnet18(pretrained=False)
+        self.backbone = models.resnet18(pretrained=pretrained)
+        self.fc = nn.Linear(
+            in_features=25088, out_features=num_classes
+        )
+
+        self.drop = nn.Dropout(dropout)
 
     def forward(self, x):
-        outs = self.backbone(x)
+        x = self.backbone(x)
+        z = torch.flatten(x, 1)
+        z = self.drop(z)
+        output = self.fc(z)
 
-        return outs
+        return output
