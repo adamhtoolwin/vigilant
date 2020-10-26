@@ -38,9 +38,9 @@ def train(
 
     if config['cue_log_every_epoch']:
         images_grid = construct_grid(imgs)
-        cues_grid = construct_grid(labels[-1])
+        # cues_grid = construct_grid(labels[-1])
 
-        writer.add_image("Training/Cues", cues_grid, epoch)
+        # writer.add_image("Training/Cues", cues_grid, epoch)
         writer.add_image("Training/Images", images_grid, epoch)
     return losses
 
