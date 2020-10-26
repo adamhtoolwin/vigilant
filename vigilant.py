@@ -1,4 +1,5 @@
 import torch
+import cv2
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset.utils import construct_grid
@@ -40,15 +41,16 @@ def train(
         writer.add_scalar('Metrics (training)/npcer', npcer, epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
-    # get random sample from dataloader
-    imgs, labels = next(iter(dataloader))
-
     if config['cue_log_every_epoch']:
+        # get random sample from dataloader
+        imgs, labels = next(iter(dataloader))
+
         images_grid = construct_grid(imgs)
         # cues_grid = construct_grid(labels[-1])
 
         # writer.add_image("Training/Cues", cues_grid, epoch)
         writer.add_image("Training/Images", images_grid, epoch)
+
     return losses
 
 
@@ -59,7 +61,8 @@ def validate(
         criterion,
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
-        epoch: int
+        epoch: int,
+        config: dict
 ):
     model.eval()
 
@@ -83,6 +86,16 @@ def validate(
         writer.add_scalar('Metrics (validation)/apcer', apcer, epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (validation)/npcer', npcer, epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
+
+    if config['cue_log_every_epoch']:
+        # get random sample from dataloader
+        imgs, labels = next(iter(dataloader))
+
+        images_grid = construct_grid(imgs)
+        # cues_grid = construct_grid(labels[-1])
+
+        # writer.add_image("Training/Cues", cues_grid, epoch)
+        writer.add_image("Validation/Images", images_grid, epoch)
 
     return losses
 
