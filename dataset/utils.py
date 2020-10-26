@@ -12,7 +12,7 @@ def imshow(batch, title=None):
     plt.pause(0.001)  # pause a bit so that plots are updated
 
 
-def construct_grid(batch):
-    images = torchvision.utils.make_grid(batch)
+def construct_grid(batch, n_row: int):
+    images = torchvision.utils.make_grid(batch, n_row)
     images = images.detach().cpu().numpy()
     return images

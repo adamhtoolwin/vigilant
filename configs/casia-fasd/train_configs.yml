@@ -18,7 +18,7 @@ milestones:  # MultiStepLR scheduler params
 gamma: 0.3
 
 image_size: 224  # size of input image
-cue_log_every_epoch: True  # will log cues every cue_log_every batches. If 0, than won't log
+log_image_count: 12  # will log cues every cue_log_every batches. If 0, than won't log
 mean:
   r: 0
   g: 0

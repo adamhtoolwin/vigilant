@@ -42,9 +42,12 @@ if __name__ == "__main__":
     if not os.path.isdir(weights_directory):
         os.makedirs(weights_directory)
 
+    debug = True
+
     start = datetime.datetime.now()
     configs['start'] = start
     configs['version'] = version
+    configs['debug'] = debug
 
     with open(version_directory + '/configs.yml', 'w') as outfile:
         yaml.dump(configs, outfile, default_flow_style=False)
@@ -52,8 +55,11 @@ if __name__ == "__main__":
     # ========================= End of DevOps ==========================
     # ========================= Start of ML ==========================
     device = configs['device']
+    print("======================")
     print("Using", device)
     print("Version ", version)
+    print("Debug mode: ", debug)
+    print("======================")
 
     train_df = pd.read_csv(configs['train_df'])
     val_df = pd.read_csv(configs['val_df'])
@@ -78,6 +84,7 @@ if __name__ == "__main__":
     if configs['print_model']:
         print(model)
 
+    print("")
     print("====================")
     print("Starting training...")
 
@@ -85,14 +92,14 @@ if __name__ == "__main__":
     val_avg_losses = []
     for i in tqdm.trange(int(configs['max_epochs']), desc="Epoch"):
         training_losses = train(model, device, optim, criterion, train_loader,
-                                writer, int(i+1), configs)
+                                writer, int(i+1), configs, debug)
         train_avg_loss = np.mean(training_losses)
         training_avg_losses.append(train_avg_loss)
         writer.add_scalar('Loss (epoch)/Training average loss', train_avg_loss, i)
 
         with torch.no_grad():
             val_losses = validate(model, device, optim, criterion, val_loader,
-                                  writer, int(i+1))
+                                  writer, int(i+1), configs, debug)
             val_avg_loss = np.mean(val_losses)
             val_avg_losses.append(val_avg_loss)
 
