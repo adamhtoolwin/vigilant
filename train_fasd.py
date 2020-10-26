@@ -62,8 +62,12 @@ if __name__ == "__main__":
     val_loader = casia_fasd.get_validation_dataloader(val_df, configs)
 
     model = ResNet18Classifier(pretrained=False)
-    if configs['checkpoint'] is not None:
+
+    try:
         model.load_state_dict(configs['checkpoint'])
+    except KeyError:
+        pass
+
     model.to(device)
 
     optim = torch.optim.Adam(model.parameters(), lr=configs['lr'])

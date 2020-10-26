@@ -3,8 +3,6 @@ device: cuda:2
 show_imgs: False
 print_model: False
 
-checkpoint_path: None
-
 loss_coef:  # coefficients for losses
   clf_loss: 5.0
   reg_loss: 5.0

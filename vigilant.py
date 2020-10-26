@@ -2,6 +2,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset.utils import construct_grid
+import metrics
 
 
 def train(
@@ -28,9 +29,15 @@ def train(
         loss.backward()
         
         optimizer.step()
+        
+        predictions = torch.argmax(output, dim=1).cpu().numpy()
+        acer, apcer, npcer = metrics.get_metrics(predictions, labels.cpu())
 
         # print("Training loss: ", loss.item(), flush=True)
         writer.add_scalar('Loss/Training', loss.item(), epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (training)/acer', acer, epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (training)/apcer', apcer, epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (training)/npcer', npcer, epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
     # get random sample from dataloader
@@ -67,8 +74,14 @@ def validate(
         output = model(img)
         loss = criterion(output, labels)
 
+        predictions = torch.argmax(output, dim=1).cpu().numpy()
+        acer, apcer, npcer = metrics.get_metrics(predictions, labels.cpu())
+
         # print("Training loss: ", loss.item(), flush=True)
         writer.add_scalar('Loss/Validation', loss.item(), epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (validation)/acer', acer, epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (validation)/apcer', apcer, epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (validation)/npcer', npcer, epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
     return losses
