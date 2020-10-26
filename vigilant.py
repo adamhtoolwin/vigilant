@@ -1,8 +1,7 @@
 import torch
-import torch.nn as nn
-import torchvision
-import tqdm
 from torch.utils.tensorboard import SummaryWriter
+
+from dataset.utils import construct_grid
 
 
 def train(
@@ -12,7 +11,8 @@ def train(
         criterion,
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
-        epoch: int
+        epoch: int,
+        config: dict
 ):
     model.train()
     
@@ -33,6 +33,15 @@ def train(
         writer.add_scalar('Loss/Training', loss.item(), epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
+    # get random sample from dataloader
+    imgs, labels = next(iter(dataloader))
+
+    if config['cue_log_every_epoch']:
+        images_grid = construct_grid(imgs)
+        cues_grid = construct_grid(labels[-1])
+
+        writer.add_image("Training/Cues", cues_grid, epoch)
+        writer.add_image("Training/Images", images_grid, epoch)
     return losses
 
 
@@ -63,3 +72,7 @@ def validate(
         losses.append(loss.item())
 
     return losses
+
+
+def evaluate():
+    pass

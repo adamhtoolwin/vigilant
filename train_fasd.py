@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, help="Config file path.")
+    parser.add_argument("-ch", "--checkpoint", required=False, help="Checkpoint file path.", default=None)
     args = parser.parse_args()
 
     with open(args.config, 'r') as stream:
@@ -61,6 +62,8 @@ if __name__ == "__main__":
     val_loader = casia_fasd.get_validation_dataloader(val_df, configs)
 
     model = ResNet18Classifier(pretrained=False)
+    if configs['checkpoint'] is not None:
+        model.load_state_dict(configs['checkpoint'])
     model.to(device)
 
     optim = torch.optim.Adam(model.parameters(), lr=configs['lr'])
@@ -78,7 +81,7 @@ if __name__ == "__main__":
     val_avg_losses = []
     for i in tqdm.trange(int(configs['max_epochs']), desc="Epoch"):
         training_losses = train(model, device, optim, criterion, train_loader,
-                                writer, int(i+1))
+                                writer, int(i+1), configs)
         train_avg_loss = np.mean(training_losses)
         training_avg_losses.append(train_avg_loss)
         writer.add_scalar('Loss (epoch)/Training average loss', train_avg_loss, i)

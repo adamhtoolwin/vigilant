@@ -1,5 +1,8 @@
 from typing import Callable
 import os
+import tqdm
+import argparse
+import yaml
 import numpy as np
 from PIL import Image
 import torch
@@ -142,7 +145,7 @@ class Dataset(torch.utils.data.Dataset):
             grid = torchvision.utils.make_grid(result)
             imshow(grid)
 
-        for index in range(0, len(self.df)):
+        for index in tqdm.tqdm(range(0, len(self.df))):
             if self.df.iloc[index].target == 0:
                 self.metadata["fake_samples"] += 1
             else:
@@ -190,3 +193,19 @@ class Dataset(torch.utils.data.Dataset):
             return image, target
         else:
             return image
+
+
+if __name__ == "__main__":
+    print("Running dataset analysis...")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-config", "--config_file_path", required=True, help="Config file path.")
+    args = parser.parse_args()
+
+    with open(args.config_file_path, 'r') as stream:
+        configs = yaml.safe_load(stream)
+
+    data_df = pd.read_csv(configs['val_df'])
+    dataset = Dataset(data_df, configs['path_root'], transforms=get_train_augmentations())
+    print("Length of dataset: ", len(dataset))
+    dataset.analyze(n=8)
