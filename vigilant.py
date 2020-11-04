@@ -14,7 +14,8 @@ def train(
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
         epoch: int,
-        config: dict
+        config: dict,
+        debug: bool = False
 ):
     model.train()
     
@@ -41,9 +42,20 @@ def train(
         writer.add_scalar('Metrics (training)/npcer', npcer, epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
 
+        if debug:
+            print("Running training sanity check...")
+            break
+
     if config['cue_log_every_epoch']:
         # get random sample from dataloader
         imgs, labels = next(iter(dataloader))
+        #
+        # imgs = imgs.to(device)
+        # output = model(imgs)
+        # imgs = imgs.cpu()
+        #
+        # predictions = list(torch.argmax(output, dim=1).cpu().numpy())
+        # predictions_string = " ".join(predictions)
 
         images_grid = construct_grid(imgs)
         # cues_grid = construct_grid(labels[-1])
@@ -62,7 +74,8 @@ def validate(
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
         epoch: int,
-        config: dict
+        config: dict,
+        debug: bool = False
 ):
     model.eval()
 
@@ -86,6 +99,10 @@ def validate(
         writer.add_scalar('Metrics (validation)/apcer', apcer, epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (validation)/npcer', npcer, epoch * len(dataloader) + batch_index)
         losses.append(loss.item())
+
+        if debug:
+            print("Running validation sanity check...")
+            break
 
     if config['cue_log_every_epoch']:
         # get random sample from dataloader
