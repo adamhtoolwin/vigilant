@@ -87,20 +87,46 @@ if __name__ == "__main__":
 
     training_avg_losses = []
     val_avg_losses = []
+
     for i in range(int(configs['max_epochs'])):
-        training_losses = train(model, device, optim, criterion, train_loader,
+        training_losses, training_metrics = train(model, device, optim, criterion, train_loader,
                                 writer, int(i + 1), configs, debug)
+
         train_avg_loss = np.mean(training_losses)
+        train_avg_metric = {
+            'acer': np.mean(training_metrics['acer']),
+            'apcer': np.mean(training_metrics['apcer']),
+            'npcer': np.mean(training_metrics['npcer']),
+            'acc': np.mean(training_metrics['acc'])
+        }
+
         training_avg_losses.append(train_avg_loss)
+
         writer.add_scalar('Loss (epoch)/Training average loss', train_avg_loss, i)
+        writer.add_scalar('Training metrics (epoch)/Training average acer', train_avg_metric['acer'], i)
+        writer.add_scalar('Training metrics (epoch)/Training average apcer', train_avg_metric['apcer'], i)
+        writer.add_scalar('Training metrics (epoch)/Training average npcer', train_avg_metric['npcer'], i)
+        writer.add_scalar('Training metrics (epoch)/Training average accuracy', train_avg_metric['acc'], i)
 
         with torch.no_grad():
-            val_losses = validate(model, device, optim, criterion, val_loader,
+            val_losses, val_metrics = validate(model, device, optim, criterion, val_loader,
                                   writer, int(i + 1), configs, debug)
             val_avg_loss = np.mean(val_losses)
+            val_avg_metric = {
+                'acer': np.mean(val_metrics['acer']),
+                'apcer': np.mean(val_metrics['apcer']),
+                'npcer': np.mean(val_metrics['npcer']),
+                'acc': np.mean(val_metrics['acc'])
+            }
+
             val_avg_losses.append(val_avg_loss)
 
         writer.add_scalar('Loss (epoch)/Validation average loss', val_avg_loss, i)
+        writer.add_scalar('Val metrics (epoch)/Validation average acer', val_avg_metric['acer'], i)
+        writer.add_scalar('Val metrics (epoch)/Validation average apcer', val_avg_metric['apcer'], i)
+        writer.add_scalar('Val metrics (epoch)/Validation average npcer', val_avg_metric['npcer'], i)
+        writer.add_scalar('Val metrics (epoch)/Validation average accuracy', val_avg_metric['acc'], i)
+
         torch.save(model.state_dict(), weights_directory + "epoch_" + str(i) + ".pth")
 
     plt.plot(training_avg_losses, label="Training average loss")

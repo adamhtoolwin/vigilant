@@ -5,6 +5,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from dataset.utils import construct_grid
 import metrics
+from sklearn.metrics import accuracy_score
 
 
 def train(
@@ -21,6 +22,13 @@ def train(
     model.train()
     
     losses = []
+    metrics_dict = {
+        'acer': [],
+        'apcer': [],
+        'npcer': [],
+        'acc': []
+    }
+
     pbar = tqdm(dataloader)
     pbar.set_description("Epoch %d training" % epoch)
     for batch_index, (img, label) in enumerate(pbar):
@@ -37,16 +45,23 @@ def train(
         
         predictions = torch.argmax(output, dim=1).cpu().numpy()
         acer, apcer, npcer = metrics.get_metrics(predictions, labels.cpu())
+        acc = accuracy_score(labels.cpu(), predictions)
 
         # print("Training loss: ", loss.item(), flush=True)
         writer.add_scalar('Loss/Training', loss.item(), epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (training)/acer', acer, epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (training)/apcer', apcer, epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (training)/npcer', npcer, epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (training)/accuracy', acc, epoch * len(dataloader) + batch_index)
+
         losses.append(loss.item())
+        metrics_dict['acer'].append(acer)
+        metrics_dict['apcer'].append(apcer)
+        metrics_dict['npcer'].append(npcer)
+        metrics_dict['acc'].append(acc)
 
         if debug:
-            print("Running training sanity check...")
+            print("\nRan training sanity check...")
             break
 
     if config['cue_log_every_epoch']:
@@ -66,7 +81,7 @@ def train(
         # writer.add_image("Training/Cues", cues_grid, epoch)
         writer.add_image("Training/Images", images_grid, epoch)
 
-    return losses
+    return losses, metrics_dict
 
 
 def validate(
@@ -83,6 +98,12 @@ def validate(
     model.eval()
 
     losses = []
+    metrics_dict = {
+        'acer': [],
+        'apcer': [],
+        'npcer': [],
+        'acc': []
+    }
 
     pbar = tqdm(dataloader)
     pbar.set_description("Epoch %d validation" % epoch)
@@ -97,16 +118,23 @@ def validate(
 
         predictions = torch.argmax(output, dim=1).cpu().numpy()
         acer, apcer, npcer = metrics.get_metrics(predictions, labels.cpu())
+        acc = accuracy_score(labels.cpu(), predictions)
 
         # print("Training loss: ", loss.item(), flush=True)
         writer.add_scalar('Loss/Validation', loss.item(), epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (validation)/acer', acer, epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (validation)/apcer', apcer, epoch * len(dataloader) + batch_index)
         writer.add_scalar('Metrics (validation)/npcer', npcer, epoch * len(dataloader) + batch_index)
+        writer.add_scalar('Metrics (validation)/accuracy', acc, epoch * len(dataloader) + batch_index)
+
         losses.append(loss.item())
+        metrics_dict['acer'].append(acer)
+        metrics_dict['apcer'].append(apcer)
+        metrics_dict['npcer'].append(npcer)
+        metrics_dict['acc'].append(acc)
 
         if debug:
-            print("Running validation sanity check...")
+            print("\nRan validation sanity check...")
             break
 
     if config['cue_log_every_epoch']:
@@ -119,7 +147,7 @@ def validate(
         # writer.add_image("Training/Cues", cues_grid, epoch)
         writer.add_image("Validation/Images", images_grid, epoch)
 
-    return losses
+    return losses, metrics_dict
 
 
 def evaluate():
