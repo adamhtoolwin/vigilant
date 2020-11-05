@@ -1,5 +1,6 @@
 import torch
 import cv2
+from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
 from dataset.utils import construct_grid
@@ -20,7 +21,9 @@ def train(
     model.train()
     
     losses = []
-    for batch_index, (img, label) in enumerate(dataloader):
+    pbar = tqdm(dataloader)
+    pbar.set_description("Epoch %d training" % epoch)
+    for batch_index, (img, label) in enumerate(pbar):
         img = img.to(device)
         labels = label.to(device)
 
@@ -81,7 +84,9 @@ def validate(
 
     losses = []
 
-    for batch_index, (img, label) in enumerate(dataloader):
+    pbar = tqdm(dataloader)
+    pbar.set_description("Epoch %d validation" % epoch)
+    for batch_index, (img, label) in enumerate(pbar):
         img = img.to(device)
         labels = label.to(device)
 
