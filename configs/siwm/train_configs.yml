@@ -19,15 +19,16 @@ gamma: 0.3
 
 image_size: 224  # size of input image
 cue_log_every_epoch: True  # will log cues every cue_log_every batches. If 0, than won't log
-mean:
-  r: 0
-  g: 0
-  b: 0
-std:
-  r: 1
-  g: 1
-  b: 1
+#mean:
+#  r: 0
+#  g: 0
+#  b: 0
+#std:
+#  r: 1
+#  g: 1
+#  b: 1
 
+# imagenet
 #mean:
 #  r: 0.485
 #  g: 0.456
@@ -36,6 +37,16 @@ std:
 #  r: 0.229
 #  g: 0.224
 #  b: 0.225
+
+# computed
+mean:
+  r: 0.321
+  g: 0.370
+  b: 0.514
+std:
+  r: 0.168
+  g: 0.183
+  b: 0.216
 
 # uncomment this, to use online face cropping
 # however it is not recommended

@@ -206,6 +206,10 @@ if __name__ == "__main__":
         configs = yaml.safe_load(stream)
 
     data_df = pd.read_csv(configs['val_df'])
-    dataset = Dataset(data_df, configs['path_root'], transforms=get_train_augmentations())
+
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    dataset = Dataset(data_df, configs['path_root'], transforms=get_train_augmentations(mean=mean, std=std))
     print("Length of dataset: ", len(dataset))
     dataset.analyze(n=8)
