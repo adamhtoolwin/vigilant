@@ -28,7 +28,7 @@ cue_log_every_epoch: True  # will log cues every cue_log_every batches. If 0, th
 #  g: 1
 #  b: 1
 
-# imagenet
+### imagenet
 #mean:
 #  r: 0.485
 #  g: 0.456
@@ -47,6 +47,16 @@ std:
   r: 0.168
   g: 0.183
   b: 0.216
+
+## Author's
+#mean:
+#  r: 0.392
+#  g: 0.392
+#  b: 0.392
+#std:
+#  r: 0.314
+#  g: 0.314
+#  b: 0.314
 
 # uncomment this, to use online face cropping
 # however it is not recommended
