@@ -19,26 +19,8 @@ gamma: 0.3
 
 image_size: 224  # size of input image
 cue_log_every_epoch: True  # will log cues every cue_log_every batches. If 0, than won't log
-mean:
-  r: 0
-  g: 0
-  b: 0
-std:
-  r: 1
-  g: 1
-  b: 1
 
-### imagenet
-#mean:
-#  r: 0.485
-#  g: 0.456
-#  b: 0.406
-#std:
-#  r: 0.229
-#  g: 0.224
-#  b: 0.225
-
-## computed
+# computed
 #mean:
 #  r: 0.321
 #  g: 0.370
@@ -48,15 +30,24 @@ std:
 #  g: 0.183
 #  b: 0.216
 
-## Author's
 #mean:
-#  r: 0.392
-#  g: 0.392
-#  b: 0.392
+#  r: 0.485
+#  g: 0.456fa
+#  b: 0.406
 #std:
-#  r: 0.314
-#  g: 0.314
-#  b: 0.314
+#  r: 0.229
+#  g: 0.224
+#  b: 0.225
+
+## Author's
+mean:
+  r: 0.392
+  g: 0.392
+  b: 0.392
+std:
+  r: 0.314
+  g: 0.314
+  b: 0.314
 
 # uncomment this, to use online face cropping
 # however it is not recommended
@@ -69,15 +60,15 @@ std:
 #  factor: 0.709
 #  device: *device
 
-train_df: "/root/datasets/siwm/train_labels.csv"  # path to train csv file
-val_df: "/root/datasets/siwm/test_labels.csv"  # path to validation csv file
-path_root: "/root/datasets/siwm"  # prefix path to your images
+train_df: "/root/datasets/casia-fasd/train_labels.csv"  # path to train csv file
+val_df: "/root/datasets/casia-fasd/test_labels.csv"  # path to validation csv file
+path_root: "/root/datasets/casia-fasd"  # prefix path to your images
 
 batch_size: 64  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 
-log_dir: "/root/vigilant/logs/siwm/"  # path to save pytorch_lightning logs
+log_dir: "/root/vigilant/logs/casia-fasd/"  # path to save pytorch_lightning logs
 max_epochs: 25  # max number of epochs to train (if doesn't achieved early stopping)
 
 use_balance_sampler: False  # You can try overcome class disbalance using balance sampler
