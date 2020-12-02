@@ -170,9 +170,10 @@ class ResNet18Classifier(nn.Module):
         num_classes: int = 2,
         pretrained: bool = True,
         dropout: float = 0.5,
+        norm_layer: nn.Module = nn.BatchNorm2d
     ):
         super().__init__()
-        self.resnet18 = models.resnet18(pretrained=pretrained)
+        self.resnet18 = models.resnet18(pretrained=pretrained, norm_layer=norm_layer)
         self.resnet18.fc = nn.Linear(
             in_features=self.resnet18.fc.in_features, out_features=num_classes
         )
