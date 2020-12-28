@@ -48,7 +48,7 @@ std:
 #  factor: 0.709
 #  device: *device
 
-train_df: "/root/datasets/surf/train_labels.csv"  # path to train csv file
+train_df: "/root/datasets/surf/train_pruned.csv"  # path to train csv file
 val_df: "/root/datasets/surf/val_labels.csv"  # path to validation csv file
 path_root: "/root/datasets/surf"  # prefix path to your images
 

@@ -1,0 +1,42 @@
+device: cuda:0  # can infer using only 1 gpu
+verbose: True  # whether print statistics or not
+
+checkpoints: "/root/lgsc/logs/casia-fasd/tensorboard/default/version_7/checkpoints/epoch=15.ckpt"  # path to pl checkpoint
+
+image_size: 224  # size of input image
+mean:
+  r: 0
+  g: 0
+  b: 0
+std:
+  r: 1
+  g: 1
+  b: 1
+
+#mean: # use Imagenet values
+#  r: 0.485
+#  g: 0.456
+#  b: 0.406
+#std:
+#  r: 0.229
+#  g: 0.224
+#  b: 0.225
+
+with_labels: True  # Whether your csv file has labels or not
+num_workers: 0  # param for infer dataloader
+batch_size: 64  # batch size for infer dataloader
+
+# uncomment this, to use online face cropping
+# however it is not recommended
+# you can only use cpu device as device for face-cropping nn
+#face_detector:
+#  image_size: 512
+#  margin: 100
+#  min_face_size: 100
+#  thresholds: [0.6, 0.7, 0.7]
+#  factor: 0.709
+#  device: *device
+
+infer_df: "/root/datasets/surf/test_labels.csv"  # path to csv file with test data
+root: "/root/datasets/surf"  # prefix path to your images
+out_file:  "/root/lgsc/results/version_7_fasd_trained_infer_surf.txt"  # path to file you want save your results

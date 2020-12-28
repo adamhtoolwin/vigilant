@@ -205,7 +205,7 @@ if __name__ == "__main__":
     with open(args.config_file_path, 'r') as stream:
         configs = yaml.safe_load(stream)
 
-    data_df = pd.read_csv(configs['val_df'])
+    data_df = pd.read_csv(configs['train_df'])
 
     mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
     std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])

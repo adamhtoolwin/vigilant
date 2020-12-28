@@ -1,15 +1,18 @@
 from typing import Callable
 import os
+import tqdm
+import argparse
+import yaml
 import numpy as np
 from PIL import Image
 import torch
 import torchvision
 import logging
-import argparse
-import yaml
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+from catalyst.data import BalanceClassSampler
+from torch.utils.data import DataLoader
 
 from dataset.utils import imshow
 
@@ -30,6 +33,7 @@ def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std:
             # A.RandomCrop(image_size, image_size, p=0.5),
 
             A.LongestMaxSize(image_size),
+            # A.Equalize(mode='cv', by_channels=True, mask=None, always_apply=False, p=0.5),
             A.Normalize(mean=mean, std=std),
             A.HorizontalFlip(),
             A.PadIfNeeded(image_size, image_size, 0),
@@ -49,6 +53,60 @@ def get_test_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: 
             ToTensor(),
         ]
     )
+
+
+def get_train_dataloader(df: pd.DataFrame, configs: dict):
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    transforms = get_train_augmentations(configs['image_size'], mean=mean, std=std)
+
+    try:
+        face_detector = configs['face_detector']
+    except KeyError:
+        face_detector = None
+    dataset = Dataset(
+        df, configs['path_root'], transforms, face_detector=face_detector
+    )
+    if configs['use_balance_sampler']:
+        labels = list(df.target.values)
+        sampler = BalanceClassSampler(labels, mode="upsampling")
+        shuffle = False
+    else:
+        sampler = None
+        shuffle = True
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=configs['batch_size'],
+        num_workers=configs['num_workers_train'],
+        sampler=sampler,
+        shuffle=shuffle,
+    )
+    return dataloader
+
+
+def get_validation_dataloader(df: pd.DataFrame, configs: dict):
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    transforms = get_train_augmentations(configs['image_size'], mean=mean, std=std)
+
+    try:
+        face_detector = configs['face_detector']
+    except KeyError:
+        face_detector = None
+    dataset = Dataset(
+        df, configs['path_root'], transforms, face_detector=face_detector
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=configs['batch_size'],
+        num_workers=configs['num_workers_val'],
+        shuffle=False,
+    )
+    return dataloader
 
 
 class Dataset(torch.utils.data.Dataset):
@@ -88,7 +146,7 @@ class Dataset(torch.utils.data.Dataset):
             grid = torchvision.utils.make_grid(result)
             imshow(grid)
 
-        for index in range(0, len(self.df)):
+        for index in tqdm.tqdm(range(0, len(self.df))):
             if self.df.iloc[index].target == 0:
                 self.metadata["fake_samples"] += 1
             else:
@@ -101,7 +159,7 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.df)
 
     def __getitem__(self, item: int):
-        path = os.path.join(self.root, self.df.iloc[item].path)
+        path = self.df.iloc[item].path
 
         image = Image.open(path)
         if self.with_labels:
@@ -148,7 +206,11 @@ if __name__ == "__main__":
     with open(args.config_file_path, 'r') as stream:
         configs = yaml.safe_load(stream)
 
-    data_df = pd.read_csv(configs['train_df'])
-    dataset = Dataset(data_df, configs['path_root'], transforms=get_train_augmentations())
+    data_df = pd.read_csv(configs['val_df'])
+
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    dataset = Dataset(data_df, configs['path_root'], transforms=get_train_augmentations(mean=mean, std=std))
     print("Length of dataset: ", len(dataset))
     dataset.analyze(n=8)

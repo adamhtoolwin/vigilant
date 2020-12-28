@@ -11,7 +11,7 @@ from sklearn.metrics import accuracy_score
 def train(
         model,
         device,
-        optimizer: torch.optim.Optimizer,
+        optimizer,
         criterion,
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
@@ -87,7 +87,7 @@ def train(
 def validate(
         model,
         device,
-        optimizer: torch.optim.Optimizer,
+        optimizer,
         criterion,
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
