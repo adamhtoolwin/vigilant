@@ -11,7 +11,7 @@ loss_coef:  # coefficients for losses
   trip_loss: 1.0
 
 pretrained: True
-lr: 0.01  # optimizer lr
+lr: 0.001  # optimizer lr
 milestones:  # MultiStepLR scheduler params
   - 10
   - 30
@@ -63,7 +63,7 @@ train_df: "/root/datasets/meta-fas-experiment/baseline/train_pruned.csv"  # path
 val_df: "/root/datasets/meta-fas-experiment/baseline/val.csv"  # path to validation csv file
 path_root: "/root/datasets/combined"  # prefix path to your images
 
-batch_size: 32  # batch size for both validation and train dataloader
+batch_size: 64  # batch size for both validation and train dataloader
 num_workers_train: 0  # param for training dataloader
 num_workers_val: 0  # param for validation dataloader
 

@@ -131,6 +131,10 @@ if __name__ == "__main__":
 
         torch.save(model.state_dict(), weights_directory + "epoch_" + str(i) + ".pth")
 
+        # scheduler.step(epoch=None)
+        # current_lr = scheduler.get_last_lr()[0]
+        # writer.add_scalar('Learning Rate', current_lr, i)
+
     plt.plot(training_avg_losses, label="Training average loss")
     plt.plot(val_avg_losses, label="Validation average loss")
     plt.title("Overall Loss curve")
