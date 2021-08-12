@@ -10,6 +10,8 @@ import yaml
 import pandas as pd
 import time
 import matplotlib.pyplot as plt
+from catalyst.data import BalanceClassSampler
+from torch.utils.data import DataLoader
 
 from dataset.utils import imshow
 
@@ -32,7 +34,7 @@ def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std:
             A.LongestMaxSize(image_size),
             A.Normalize(mean=mean, std=std),
             A.HorizontalFlip(),
-            A.PadIfNeeded(image_size, image_size, 0),
+            A.PadIfNeeded(image_size, image_size),
             # A.Transpose(),
             ToTensor(),
         ]
@@ -50,16 +52,67 @@ def get_test_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: 
         ]
     )
 
+def get_train_dataloader(df: pd.DataFrame, configs: dict):
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    transforms = get_train_augmentations(configs['image_size'], mean=mean, std=std)
+
+    try:
+        face_detector = configs['face_detector']
+    except KeyError:
+        face_detector = None
+    dataset = Dataset(
+        df, configs['path_root'], transforms, face_detector=face_detector
+    )
+    if configs['use_balance_sampler']:
+        labels = list(df.target.values)
+        sampler = BalanceClassSampler(labels, mode="upsampling")
+        shuffle = False
+    else:
+        sampler = None
+        shuffle = True
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=configs['batch_size'],
+        num_workers=configs['num_workers_train'],
+        sampler=sampler,
+        shuffle=shuffle,
+    )
+    return dataloader
+
+
+def get_validation_dataloader(df: pd.DataFrame, configs: dict):
+    mean = (configs['mean']['r'], configs['mean']['g'], configs['mean']['b'])
+    std = (configs['std']['r'], configs['std']['g'], configs['std']['b'])
+
+    transforms = get_train_augmentations(configs['image_size'], mean=mean, std=std)
+
+    try:
+        face_detector = configs['face_detector']
+    except KeyError:
+        face_detector = None
+    dataset = Dataset(
+        df, configs['path_root'], transforms, face_detector=face_detector
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=configs['batch_size'],
+        num_workers=configs['num_workers_val'],
+        shuffle=False,
+    )
+    return dataloader
 
 class Dataset(torch.utils.data.Dataset):
     def __init__(
-        self,
-        df: "pd.DataFrame",
-        root: str,
-        transforms: Callable,
-        custom_transforms: list = None,
-        face_detector: dict = None,
-        with_labels: bool = True,
+            self,
+            df: "pd.DataFrame",
+            root: str,
+            transforms: Callable,
+            face_detector: dict = None,
+            with_labels: bool = True,
     ):
         self.df = df.sample(frac=1).reset_index(drop=True)
         self.root = root
@@ -70,10 +123,6 @@ class Dataset(torch.utils.data.Dataset):
             face_detector["keep_all"] = True
             face_detector["post_process"] = False
             self.face_extractor = MTCNN(**face_detector)
-        self.metadata = {
-            "live_samples": 0,
-            "fake_samples": 0
-        }
 
     def analyze(self, n: int = 0):
         if n > 0:
@@ -101,7 +150,8 @@ class Dataset(torch.utils.data.Dataset):
         return len(self.df)
 
     def __getitem__(self, item: int):
-        path = os.path.join(self.root, self.df.iloc[item].path)
+        # updated for absolute paths
+        path = self.df.iloc[item].path
 
         image = Image.open(path)
         if self.with_labels:
@@ -122,9 +172,9 @@ class Dataset(torch.utils.data.Dataset):
                 )
                 face = (
                     faces[np.argmax(probs)]
-                    .numpy()
-                    .astype(np.uint8)
-                    .transpose(1, 2, 0)
+                        .numpy()
+                        .astype(np.uint8)
+                        .transpose(1, 2, 0)
                 )
             else:
                 face = faces[0].numpy().astype(np.uint8).transpose(1, 2, 0)

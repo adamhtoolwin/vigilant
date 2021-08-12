@@ -8,4 +8,3 @@ numpy
 tqdm
 albumentations
 tensorboard==2.2.0
-online_triplet_loss

@@ -13,6 +13,7 @@ def train(
         device,
         optimizer,
         criterion,
+        scheduler,
         dataloader: torch.utils.data.DataLoader,
         writer: SummaryWriter,
         epoch: int,
@@ -42,6 +43,10 @@ def train(
         loss.backward()
         
         optimizer.step()
+        scheduler.step()
+
+        current_lr = scheduler.get_last_lr()[0]
+        writer.add_scalar('Learning Rate', current_lr, epoch)
         
         predictions = torch.argmax(output, dim=1).cpu().numpy()
         acer, apcer, npcer = metrics.get_metrics(predictions, labels.cpu())

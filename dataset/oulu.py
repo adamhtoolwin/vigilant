@@ -21,6 +21,40 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2 as ToTensor
 
 
+def scale(img, min: float = -1.0, max: float = 1.0):
+    img_std = (img - 0) / (255 - 0)
+    img_scaled = img_std * (max - min) + min
+
+    return img_scaled
+
+
+class MinMaxScale(A.ImageOnlyTransform):
+    """
+    Args:
+        min_value (float, list of float): minimum of range
+        max_value  (float, list of float): maximum of range
+
+    Targets:
+        image
+
+    Image types:
+        uint8, float32
+    """
+
+    def __init__(
+        self, min_value: float = -1.0, max_value: float = 1.0
+    ):
+        super(MinMaxScale, self).__init__()
+        self.min_value = min_value
+        self.max_value = max_value
+
+    def apply(self, image, **params):
+        return scale(image, self.min_value, self.max_value)
+
+    def get_transform_init_args_names(self):
+        return ("min", "max")
+
+
 def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std: tuple = (1, 1, 1)):
     return A.Compose(
         [
@@ -34,7 +68,8 @@ def get_train_augmentations(image_size: int = 224, mean: tuple = (0, 0, 0), std:
 
             A.LongestMaxSize(image_size),
             # A.Equalize(mode='cv', by_channels=True, mask=None, always_apply=False, p=0.5),
-            A.Normalize(mean=mean, std=std),
+            # A.Normalize(mean=mean, std=std),
+            MinMaxScale(),
             A.HorizontalFlip(),
             A.PadIfNeeded(image_size, image_size, 0),
             # A.Transpose(),
@@ -214,3 +249,10 @@ if __name__ == "__main__":
     dataset = Dataset(data_df, configs['path_root'], transforms=get_train_augmentations(mean=mean, std=std))
     print("Length of dataset: ", len(dataset))
     dataset.analyze(n=8)
+
+    # dataloader = torch.utils.data.DataLoader(
+    #     dataset,
+    #     batch_size=32,
+    #     num_workers=0,
+    #     shuffle=True,
+    # )
